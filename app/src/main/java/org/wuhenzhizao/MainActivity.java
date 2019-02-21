@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
-import com.wuhenzhizao.titlebar.utils.KeyboardConflictCompat;
 import com.wuhenzhizao.titlebar.utils.ScreenUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 

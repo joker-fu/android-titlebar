@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
 
-import com.wuhenzhizao.titlebar.utils.KeyboardConflictCompat;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
 /**
@@ -31,6 +30,5 @@ public class QuickPreviewActivity extends SwipeBackActivity {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        KeyboardConflictCompat.assistWindow(getWindow());
     }
 }

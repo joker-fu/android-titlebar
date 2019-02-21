@@ -27,8 +27,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.wuhenzhizao.titlebar.R;
-import com.wuhenzhizao.titlebar.statusbar.StatusBarUtils;
 import com.wuhenzhizao.titlebar.utils.ScreenUtils;
+
+import java.util.UUID;
 
 /**
  * 通用标题栏
@@ -97,7 +98,6 @@ import com.wuhenzhizao.titlebar.utils.ScreenUtils;
  */
 @SuppressWarnings("ResourceType")
 public class CommonTitleBar extends RelativeLayout implements View.OnClickListener {
-    private View viewStatusBarFill;                     // 状态栏填充视图
     private View viewBottomLine;                        // 分隔线视图
     private View viewBottomShadow;                      // 底部阴影
     private RelativeLayout rlMain;                      // 主视图
@@ -118,11 +118,8 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     private ImageView ivVoice;
     private View centerCustomView;                      // 中间自定义视图
 
-    private boolean fillStatusBar;                      // 是否撑起状态栏, true时,标题栏浸入状态栏
     private int titleBarColor;                          // 标题栏背景颜色
     private int titleBarHeight;                         // 标题栏高度
-    private int statusBarColor;                         // 状态栏颜色
-    private int statusBarMode;                          // 状态栏模式
 
     private boolean showBottomLine;                     // 是否显示底部分割线
     private int bottomLineColor;                        // 分割线颜色
@@ -192,14 +189,8 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CommonTitleBar);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // notice 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
-            fillStatusBar = array.getBoolean(R.styleable.CommonTitleBar_fillStatusBar, true);
-        }
         titleBarColor = array.getColor(R.styleable.CommonTitleBar_titleBarColor, Color.parseColor("#ffffff"));
         titleBarHeight = (int) array.getDimension(R.styleable.CommonTitleBar_titleBarHeight, ScreenUtils.dp2PxInt(context, 44));
-        statusBarColor = array.getColor(R.styleable.CommonTitleBar_statusBarColor, Color.parseColor("#ffffff"));
-        statusBarMode = array.getInt(R.styleable.CommonTitleBar_statusBarMode, 0);
 
         showBottomLine = array.getBoolean(R.styleable.CommonTitleBar_showBottomLine, true);
         bottomLineColor = array.getColor(R.styleable.CommonTitleBar_bottomLineColor, Color.parseColor("#dddddd"));
@@ -255,35 +246,19 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     /**
      * 初始化全局视图
      *
-     * @param context       上下文
+     * @param context 上下文
      */
     private void initGlobalViews(Context context) {
         ViewGroup.LayoutParams globalParams = new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         setLayoutParams(globalParams);
 
-        boolean transparentStatusBar = StatusBarUtils.supportTransparentStatusBar();
-
-        // 构建标题栏填充视图
-        if (fillStatusBar && transparentStatusBar) {
-            int statusBarHeight = StatusBarUtils.getStatusBarHeight(context);
-            viewStatusBarFill = new View(context);
-            viewStatusBarFill.setId(StatusBarUtils.generateViewId());
-            viewStatusBarFill.setBackgroundColor(statusBarColor);
-            LayoutParams statusBarParams = new LayoutParams(MATCH_PARENT, statusBarHeight);
-            statusBarParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            addView(viewStatusBarFill, statusBarParams);
-        }
 
         // 构建主视图
         rlMain = new RelativeLayout(context);
-        rlMain.setId(StatusBarUtils.generateViewId());
+        rlMain.setId(generateViewId());
         rlMain.setBackgroundColor(titleBarColor);
         LayoutParams mainParams = new LayoutParams(MATCH_PARENT, titleBarHeight);
-        if (fillStatusBar && transparentStatusBar) {
-            mainParams.addRule(RelativeLayout.BELOW, viewStatusBarFill.getId());
-        } else {
-            mainParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        }
+        mainParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
         // 计算主布局高度
         if (showBottomLine) {
@@ -292,6 +267,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             mainParams.height = titleBarHeight;
         }
         addView(rlMain, mainParams);
+        setGravity(Gravity.CENTER_VERTICAL);
 
         // 构建分割线视图
         if (showBottomLine) {
@@ -315,7 +291,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     /**
      * 初始化主视图
      *
-     * @param context       上下文
+     * @param context 上下文
      */
     private void initMainViews(Context context) {
         if (leftType != TYPE_LEFT_NONE) {
@@ -332,7 +308,8 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     /**
      * 初始化主视图左边部分
      * -- add: adaptive RTL
-     * @param context       上下文
+     *
+     * @param context 上下文
      */
     private void initMainLeftViews(Context context) {
         LayoutParams leftInnerParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
@@ -342,7 +319,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         if (leftType == TYPE_LEFT_TEXTVIEW) {
             // 初始化左边TextView
             tvLeft = new TextView(context);
-            tvLeft.setId(StatusBarUtils.generateViewId());
+            tvLeft.setId(generateViewId());
             tvLeft.setText(leftText);
             tvLeft.setTextColor(leftTextColor);
             tvLeft.setTextSize(TypedValue.COMPLEX_UNIT_PX, leftTextSize);
@@ -365,7 +342,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         } else if (leftType == TYPE_LEFT_IMAGEBUTTON) {
             // 初始化左边ImageButton
             btnLeft = new ImageButton(context);
-            btnLeft.setId(StatusBarUtils.generateViewId());
+            btnLeft.setId(generateViewId());
             btnLeft.setBackgroundColor(Color.TRANSPARENT);
             btnLeft.setImageResource(leftImageResource);
             btnLeft.setPadding(PADDING_12, 0, PADDING_12, 0);
@@ -377,7 +354,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             // 初始化自定义View
             viewCustomLeft = LayoutInflater.from(context).inflate(leftCustomViewRes, rlMain, false);
             if (viewCustomLeft.getId() == View.NO_ID) {
-                viewCustomLeft.setId(StatusBarUtils.generateViewId());
+                viewCustomLeft.setId(generateViewId());
             }
             rlMain.addView(viewCustomLeft, leftInnerParams);
         }
@@ -386,7 +363,8 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     /**
      * 初始化主视图右边部分
      * -- add: adaptive RTL
-     * @param context       上下文
+     *
+     * @param context 上下文
      */
     private void initMainRightViews(Context context) {
         LayoutParams rightInnerParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
@@ -396,7 +374,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         if (rightType == TYPE_RIGHT_TEXTVIEW) {
             // 初始化右边TextView
             tvRight = new TextView(context);
-            tvRight.setId(StatusBarUtils.generateViewId());
+            tvRight.setId(generateViewId());
             tvRight.setText(rightText);
             tvRight.setTextColor(rightTextColor);
             tvRight.setTextSize(TypedValue.COMPLEX_UNIT_PX, rightTextSize);
@@ -409,7 +387,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         } else if (rightType == TYPE_RIGHT_IMAGEBUTTON) {
             // 初始化右边ImageBtn
             btnRight = new ImageButton(context);
-            btnRight.setId(StatusBarUtils.generateViewId());
+            btnRight.setId(generateViewId());
             btnRight.setImageResource(rightImageResource);
             btnRight.setBackgroundColor(Color.TRANSPARENT);
             btnRight.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -421,7 +399,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             // 初始化自定义view
             viewCustomRight = LayoutInflater.from(context).inflate(rightCustomViewRes, rlMain, false);
             if (viewCustomRight.getId() == View.NO_ID) {
-                viewCustomRight.setId(StatusBarUtils.generateViewId());
+                viewCustomRight.setId(generateViewId());
             }
             rlMain.addView(viewCustomRight, rightInnerParams);
         }
@@ -430,13 +408,13 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     /**
      * 初始化主视图中间部分
      *
-     * @param context   上下文
+     * @param context 上下文
      */
     private void initMainCenterViews(Context context) {
         if (centerType == TYPE_CENTER_TEXTVIEW) {
             // 初始化中间子布局
             llMainCenter = new LinearLayout(context);
-            llMainCenter.setId(StatusBarUtils.generateViewId());
+            llMainCenter.setId(generateViewId());
             llMainCenter.setGravity(Gravity.CENTER);
             llMainCenter.setOrientation(LinearLayout.VERTICAL);
             llMainCenter.setOnClickListener(this);
@@ -456,7 +434,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             tvCenter.setSingleLine(true);
             // 设置跑马灯效果
             tvCenter.setMaxWidth((int) (ScreenUtils.getScreenPixelSize(context)[0] * 3 / 5.0));
-            if (centerTextMarquee){
+            if (centerTextMarquee) {
                 tvCenter.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                 tvCenter.setMarqueeRepeatLimit(-1);
                 tvCenter.requestFocus();
@@ -527,7 +505,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
             // 初始化搜索框搜索ImageView
             ivSearch = new ImageView(context);
-            ivSearch.setId(StatusBarUtils.generateViewId());
+            ivSearch.setId(generateViewId());
             ivSearch.setOnClickListener(this);
             int searchIconWidth = ScreenUtils.dp2PxInt(context, 15);
             LayoutParams searchParams = new LayoutParams(searchIconWidth, searchIconWidth);
@@ -539,7 +517,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
             // 初始化搜索框语音ImageView
             ivVoice = new ImageView(context);
-            ivVoice.setId(StatusBarUtils.generateViewId());
+            ivVoice.setId(generateViewId());
             ivVoice.setOnClickListener(this);
             LayoutParams voiceParams = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
             voiceParams.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -593,7 +571,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             // 初始化中间自定义布局
             centerCustomView = LayoutInflater.from(context).inflate(centerCustomViewRes, rlMain, false);
             if (centerCustomView.getId() == View.NO_ID) {
-                centerCustomView.setId(StatusBarUtils.generateViewId());
+                centerCustomView.setId(generateViewId());
             }
             LayoutParams centerCustomParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
             centerCustomParams.setMarginStart(PADDING_12);
@@ -614,25 +592,6 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 //                centerCustomParams.addRule(RelativeLayout.START_OF, viewCustomRight.getId());
 //            }
             rlMain.addView(centerCustomView, centerCustomParams);
-        }
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        setUpImmersionTitleBar();
-    }
-
-    private void setUpImmersionTitleBar() {
-        Window window = getWindow();
-        if (window == null) return;
-        // 设置状态栏背景透明
-        StatusBarUtils.transparentStatusBar(window);
-        // 设置图标主题
-        if (statusBarMode == 0) {
-            StatusBarUtils.setDarkMode(window);
-        } else {
-            StatusBarUtils.setLightMode(window);
         }
     }
 
@@ -743,9 +702,6 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      */
     @Override
     public void setBackgroundColor(int color) {
-        if (viewStatusBarFill != null) {
-            viewStatusBarFill.setBackgroundColor(color);
-        }
         rlMain.setBackgroundColor(color);
     }
 
@@ -758,44 +714,6 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     public void setBackgroundResource(int resource) {
         setBackgroundColor(Color.TRANSPARENT);
         super.setBackgroundResource(resource);
-    }
-
-    /**
-     * 设置状态栏颜色
-     *
-     * @param color
-     */
-    public void setStatusBarColor(int color) {
-        if (viewStatusBarFill != null) {
-            viewStatusBarFill.setBackgroundColor(color);
-        }
-    }
-
-    /**
-     * 是否填充状态栏
-     *
-     * @param show
-     */
-    public void showStatusBar(boolean show) {
-        if (viewStatusBarFill != null) {
-            viewStatusBarFill.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
-    }
-
-    /**
-     * 切换状态栏模式
-     */
-    public void toggleStatusBarMode() {
-        Window window = getWindow();
-        if (window == null) return;
-        StatusBarUtils.transparentStatusBar(window);
-        if (statusBarMode == 0) {
-            statusBarMode = 1;
-            StatusBarUtils.setLightMode(window);
-        } else {
-            statusBarMode = 0;
-            StatusBarUtils.setDarkMode(window);
-        }
     }
 
     /**
@@ -923,7 +841,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      */
     public void setLeftView(View leftView) {
         if (leftView.getId() == View.NO_ID) {
-            leftView.setId(StatusBarUtils.generateViewId());
+            leftView.setId(generateViewId());
         }
         LayoutParams leftInnerParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
         leftInnerParams.addRule(RelativeLayout.ALIGN_PARENT_START);
@@ -936,7 +854,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      */
     public void setCenterView(View centerView) {
         if (centerView.getId() == View.NO_ID) {
-            centerView.setId(StatusBarUtils.generateViewId());
+            centerView.setId(generateViewId());
         }
         LayoutParams centerInnerParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
         centerInnerParams.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -949,7 +867,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      */
     public void setRightView(View rightView) {
         if (rightView.getId() == View.NO_ID) {
-            rightView.setId(StatusBarUtils.generateViewId());
+            rightView.setId(generateViewId());
         }
         LayoutParams rightInnerParams = new LayoutParams(WRAP_CONTENT, MATCH_PARENT);
         rightInnerParams.addRule(RelativeLayout.ALIGN_PARENT_END);
@@ -1054,5 +972,18 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      */
     public interface OnTitleBarDoubleClickListener {
         void onClicked(View v);
+    }
+
+    /**
+     * 计算View Id
+     *
+     * @return
+     */
+    public static int generateViewId() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return View.generateViewId();
+        } else {
+            return UUID.randomUUID().hashCode();
+        }
     }
 }

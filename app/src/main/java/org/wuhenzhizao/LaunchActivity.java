@@ -25,14 +25,6 @@ public class LaunchActivity extends SwipeBackActivity {
 
         final CommonTitleBar titleBar = (CommonTitleBar) findViewById(R.id.titlebar);
         titleBar.setBackgroundResource(R.drawable.shape_gradient);
-        titleBar.setListener(new CommonTitleBar.OnTitleBarListener() {
-            @Override
-            public void onClicked(View v, int action, String extra) {
-                if (action == CommonTitleBar.ACTION_RIGHT_TEXT) {
-                    titleBar.toggleStatusBarMode();
-                }
-            }
-        });
 
         final ListView lv = (ListView) findViewById(R.id.listview);
         lv.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, new String[]{

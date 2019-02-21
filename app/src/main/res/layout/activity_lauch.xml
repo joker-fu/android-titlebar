@@ -9,16 +9,13 @@
     <com.wuhenzhizao.titlebar.widget.CommonTitleBar
         android:id="@+id/titlebar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        titlebar:statusBarMode="light"
+        android:layout_height="?attr/actionBarSize"
+        titlebar:bottomShadowHeight="0dp"
         titlebar:centerText="通用标题栏"
         titlebar:centerTextColor="#ffffff"
-        titlebar:bottomShadowHeight="0dp"
-        titlebar:showBottomLine="false"
         titlebar:centerType="textView"
         titlebar:rightType="textView"
-        titlebar:rightText="切换图标颜色"
-        titlebar:rightTextColor="#ffffff" />
+        titlebar:showBottomLine="false" />
 
     <ListView
         android:id="@+id/listview"

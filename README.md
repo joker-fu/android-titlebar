@@ -46,9 +46,6 @@ dependencies {
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     titlebar:titleBarColor="color"             // 标题栏背景颜色
-    titlebar:fillStatusBar="boolean"           // 填充状态栏，true时，标题栏会创建一块和系统状态栏同高的视图，用于沉浸式标题栏
-    titlebar:statusBarColor="color"            // 使用沉浸式标题栏时，标题栏显示的颜色
-    titlebar:statusBarMode="dark|light"        // 状态栏图标模式，默认是暗色图标
     titlebar:titleBarHeight="dimension"        // 标题栏高度
     titlebar:showBottomLine="boolean"          // 是否显示标题栏底部的分割线   
     titlebar:bottomLineColor="color"           // 标题栏分割线颜色
@@ -134,12 +131,6 @@ rightCustomLayout.findViewById(R.id.子控件ID).setOnClickListener(new View.OnC
     }
 });
 ```
-
-**动态切换状态栏图标颜色**
-
-```java
-titleBar.toggleStatusBarMode();
-```  
 
 注意点
 =====

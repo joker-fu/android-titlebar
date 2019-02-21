@@ -66,7 +66,6 @@ public class ScreenUtils {
      * 获取屏幕大小
      *
      * @param context
-     * @return
      */
     public static int[] getScreenPixelSize(Context context) {
         DisplayMetrics metrics = getDisplayMetrics(context);
